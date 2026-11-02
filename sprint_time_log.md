@@ -27,7 +27,7 @@ The expected minimum amount of time each Sprint for each category is as follows:
 |Date      |Start Time|Category|Description                                 |Total Minutes|
 |----------|----------|:------:|--------------------------------------------|:-----------:|
 | 11/2/26  | 10:15    | MTG    | Plan sprint, get familier with new team.   | 60          |
-| 11/2/26  | 3:20     | IM     |                                            |             |
+| 11/2/26  | 3:20     | IM     | Learn about Kotlin, install and setup env. | 60          |
 |          |          |        |                                            |             |
 |          |          |        |                                            |             |
 |          |          |        |                                            |             |
@@ -39,7 +39,7 @@ _Note: Add more rows as needed._
 
 |Categroy                       |Total Time (Hours:Minutes)|
 |-------------------------------|:------------------------:|
-|IM - Individual Module         | 0:00/10                  |
+|IM - Individual Module         | 1:00/10                  |
 |TP - Team Project              | 0:00/4                   |
 |MTG - Class Meetings           | 0:00/4                   |
 |**TOTAL**                      | 0:00/18                  |
