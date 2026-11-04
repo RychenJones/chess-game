@@ -31,7 +31,7 @@ The expected minimum amount of time each Sprint for each category is as follows:
 | 11/3/26  | 7:25     | IM     | Learn about Kotlin functions and classes.  | 30          |
 | 11/4/26  | 10:15    | TP     | Got more familiar with the env, planned.   | 60          |
 | 11/4/26  | 2:50     | IM     | Practiced syntax, created special AI agents| 30          |
-| 11/4/26  | 3:50     | IM     |                                            |             |
+| 11/4/26  | 3:50     | IM     | Set file structure and learned of Compose. | 30          |
 |          |          |        |                                            |             |
 |          |          |        |                                            |             |
 |          |          |        |                                            |             |
@@ -55,7 +55,7 @@ _Note: Add more rows as needed._
 
 |Categroy                       |Total Time (Hours:Minutes)|
 |-------------------------------|:------------------------:|
-|IM - Individual Module         | 2:00/10                  |
+|IM - Individual Module         | 2:30/10                  |
 |TP - Team Project              | 1:00/4                   |
 |MTG - Class Meetings           | 1:00/4                   |
-|**TOTAL**                      | 4:00/18                  |
+|**TOTAL**                      | 4:30/18                  |
