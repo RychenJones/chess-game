@@ -1,1 +1,3 @@
+package rules
+
 class PathChecker

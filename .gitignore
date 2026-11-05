@@ -1,0 +1,16 @@
+# Gradle
+.gradle/
+
+# Kotlin build/session data
+.kotlin/
+
+# Build output
+build/
+out/
+
+# IntelliJ IDEA project files
+.idea/
+*.iml
+
+# macOS metadata
+.DS_Store

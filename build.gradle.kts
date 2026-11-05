@@ -35,4 +35,5 @@ compose.desktop {
 
 tasks.test {
     useJUnitPlatform()
+    failOnNoDiscoveredTests = false
 }
