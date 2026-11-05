@@ -6,7 +6,6 @@
 
 # Build output
 build/
-out/
 
 # IntelliJ IDEA project files
 .idea/
