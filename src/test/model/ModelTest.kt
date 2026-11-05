@@ -41,4 +41,31 @@ class ModelTest {
 
         assertEquals(Position(5, 0), piece.position)
     }
+
+    @Test
+    fun `board stores and retrieves a piece by position`() {
+        val board = Board()
+        val pawn = Piece(Color.WHITE, PieceType.PAWN, Position(6, 0))
+
+        board.add(pawn)
+
+        assertEquals(pawn, board.pieceAt(Position(6, 0)))
+    }
+
+    @Test
+    fun `board returns null for an empty position`() {
+        val board = Board()
+
+        assertEquals(null, board.pieceAt(Position(6, 0)))
+    }
+
+    @Test
+    fun `board rejects two pieces in the same position`() {
+        val board = Board()
+        board.add(Piece(Color.WHITE, PieceType.PAWN, Position(6, 0)))
+
+        assertFailsWith<IllegalArgumentException> {
+            board.add(Piece(Color.BLACK, PieceType.PAWN, Position(6, 0)))
+        }
+    }
 }
