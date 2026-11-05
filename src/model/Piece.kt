@@ -1,3 +1,7 @@
 package model
 
-class Piece
+class Piece(
+    val color: Color,
+    val type: PieceType,
+    var position: Position
+)

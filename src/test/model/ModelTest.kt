@@ -22,4 +22,23 @@ class ModelTest {
         assertFailsWith<IllegalArgumentException> { Position(0, -1) }
         assertFailsWith<IllegalArgumentException> { Position(0, 8) }
     }
+
+    @Test
+    fun `stores a piece color type and position`() {
+        val position = Position(6, 0)
+        val piece = Piece(Color.WHITE, PieceType.PAWN, position)
+
+        assertEquals(Color.WHITE, piece.color)
+        assertEquals(PieceType.PAWN, piece.type)
+        assertEquals(position, piece.position)
+    }
+
+    @Test
+    fun `allows a piece position to be updated`() {
+        val piece = Piece(Color.WHITE, PieceType.PAWN, Position(6, 0))
+
+        piece.position = Position(5, 0)
+
+        assertEquals(Position(5, 0), piece.position)
+    }
 }
