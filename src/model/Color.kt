@@ -2,5 +2,11 @@ package model
 
 enum class Color {
     WHITE,
-    BLACK
+    BLACK;
+
+    fun opposite(): Color =
+        when (this) {
+            WHITE -> BLACK
+            BLACK -> WHITE
+        }
 }
