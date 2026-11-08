@@ -19,12 +19,17 @@ Own the player's interaction with the chess board, including presentation, input
 - Board and turn state from the Game Model Agent
 - Move validity/results from the Rules Agent
 - Acceptance criteria from the Orchestrator
+- The Orchestrator's assigned UI work step, task constraints, and interface contracts
 
 ## Outputs
 
 - UI behavior and presentation changes
 - Interaction states and feedback behavior
 - UI verification notes, including accessibility checks
+
+## Workflow and handoff
+
+Implement the assigned UI step and run interaction and accessibility checks. Then call the QA Engineer directly with the implementation, applicable acceptance criteria, checks, and completion package. If QA returns `FAIL`, fix the reported issues and call QA directly again with the updated work. Do not report completion to the Orchestrator during this loop. Only after QA returns `PASS` may you send the passing QA verdict, completion package, and residual risks to the Orchestrator.
 
 ## Constraints
 

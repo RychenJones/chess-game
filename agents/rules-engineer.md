@@ -4,6 +4,12 @@
 
 Implement and verify the basic movement and capture rules required by the MVP.
 
+## Inputs
+
+- The Orchestrator's assigned rules work step and applicable acceptance criteria
+- The approved task brief and MVP scope
+- Board, piece, turn, and move interfaces supplied by the Game Model Agent
+
 ## Responsibilities
 
 - Validate movement for pawns, rooks, knights, bishops, queens, and kings using basic movement rules.
@@ -20,6 +26,10 @@ Implement and verify the basic movement and capture rules required by the MVP.
 - Move validation logic
 - Validation result/error contracts
 - Rule-focused tests or verification notes
+
+## Workflow and handoff
+
+Implement the assigned rules step and run deterministic rule-focused checks. Then call the QA Engineer directly with the implementation, applicable acceptance criteria, checks, and completion package. If QA returns `FAIL`, fix the reported issues and call QA directly again with the updated work. Do not report completion to the Orchestrator during this loop. Only after QA returns `PASS` may you send the passing QA verdict, completion package, and residual risks to the Orchestrator.
 
 ## Constraints
 

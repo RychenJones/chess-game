@@ -30,28 +30,34 @@ Out of scope unless the user explicitly expands the project:
 | UI Agent | Owns board presentation, interaction, feedback, and accessibility/UX |
 | Game Model Agent | Owns board, piece, turn, capture, and reset state |
 | Rules Agent | Owns basic piece movement, path blocking, and move validation |
-| QA/Review Agent | Combines test design, acceptance verification, regression checking, and code review |
+| QA Engineer | Combines test design, acceptance verification, regression checking, and code review |
 | Integration Agent | Connects agent outputs and verifies the complete playable flow |
 
 ## Standard workflow
 
-1. The Architect, as the primary user-facing planning agent, clarifies the requested feature and records acceptance criteria.
-2. The Architect asks the Orchestrator to implement an approved request.
-3. The Orchestrator assigns focused work to the Game Model, Rules, UI, and other relevant agents.
-4. The Integration Agent combines compatible changes and checks cross-agent contracts.
-5. The QA/Review Agent tests the result and reviews it against the acceptance criteria.
-6. The Orchestrator sends failures back to the responsible agent and repeats verification.
-7. The Orchestrator reports the completed result to the user, including a one-paragraph summary of what each participating agent did.
+1. The Architect is the only agent that conducts requirements discovery with the user. It turns the user's request into an approved task brief and explicit acceptance criteria (AC).
+2. The Architect sends the Orchestrator an implementation handoff containing the task brief, AC, scope boundaries, assumptions, dependencies, and risks. The Architect does not implement the change.
+3. The Orchestrator decomposes the approved task into ordered work steps and sends each assigned specialist a work package containing its step, the complete applicable AC, required interfaces, constraints, and dependencies.
+4. Each specialist (Game Model, Rules, UI, and Integration when assigned) completes its work package, performs its own checks, and directly submits its implementation and completion package to the QA Engineer. The completion package lists the task received, files or interfaces changed, checks performed, results, and remaining risks. A specialist must not report completion to the Orchestrator before QA has reviewed the work.
+5. QA evaluates the specialist's submission against the applicable AC and returns an explicit `PASS` or `FAIL` verdict directly to that specialist.
+6. On `FAIL`, the specialist fixes the QA findings and directly resubmits the updated implementation and completion package to QA. The specialist owns this repair-and-retest loop and repeats it until QA returns `PASS`.
+7. Only after QA returns `PASS` does the specialist report the passing result and completion package to the Orchestrator. The Orchestrator records the verdict, integrates dependent work, and requests any required integration or regression checks.
+8. When all assigned work has passed verification, the Orchestrator sends the final implementation report to the user. The report contains one concise paragraph for every participating agent, overall verification status, unresolved risks, and follow-up work.
+
+The Orchestrator's final report is a completion output, not requirements discovery. It must not ask the user to define or clarify scope; all user requirements enter through the Architect. The Orchestrator coordinates assignments and records passed reports; it does not act as the QA relay for specialist submissions.
 
 ## Handoff contract
 
 Every agent should state:
 
 - The task it received
+- The inputs it consumed and their source
 - Assumptions and constraints
 - Files or interfaces it changed
 - Tests or checks performed
 - Remaining risks or follow-up work
+
+Every agent file must include explicit `Role`, `Inputs`, and `Outputs` sections. Inputs must identify the upstream agent or artifact that provides them; inferred inputs are not sufficient.
 
 The Orchestrator's final user-facing report must include one concise paragraph for each participating agent explaining that agent's contribution to the task. The report should also include verification status and any unresolved risks.
 
