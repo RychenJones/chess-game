@@ -1,3 +1,7 @@
+To-do next:
+review moveValidator
+
+
 ## MVP Acceptance Criteria
 
 The minimum viable version of this project must:
