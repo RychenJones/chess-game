@@ -36,7 +36,7 @@ The expected minimum amount of time each Sprint for each category is as follows:
 | 11/6/26  | 10:15    | MTG    | Stand up, coordinate, work on project.     | 60          |
 | 11/6/26  | 6:40     | IM     | Created game state and movement validation.| 40          |
 | 11/7/26  | 5:00     | TP     | Improved agent orchestrion, built agents.  | 80          |
-| 11/7/26  | 6:20     | IM     |                                            |             |
+| 11/7/26  | 6:20     | IM     | Optimized agents and agentic workflow.     | 30          |
 |          |          |        |                                            |             |
 |          |          |        |                                            |             |
 |          |          |        |                                            |             |
@@ -55,7 +55,7 @@ _Note: Add more rows as needed._
 
 |Categroy                       |Total Time (Hours:Minutes)|
 |-------------------------------|:------------------------:|
-|IM - Individual Module         | 4:10/10                  |
+|IM - Individual Module         | 4:40/10                  |
 |TP - Team Project              | 2:20/4                   |
 |MTG - Class Meetings           | 2:00/4                   |
-|**TOTAL**                      | 8:30/18                  |
+|**TOTAL**                      | 9:00/18                  |
