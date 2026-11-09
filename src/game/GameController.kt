@@ -23,7 +23,7 @@ class GameController(
 
     fun tryMove(move: Move): MoveResult {
         if (state.selectedPosition != move.from) {
-            return MoveResult.Failure("Select the piece at ${move.from} before moving")
+            return MoveResult.Failure("Select the piece at ${move.from.toAlgebraic()} before moving")
         }
 
         return when (val validation = validator.validate(state, move)) {

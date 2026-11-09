@@ -18,7 +18,7 @@ fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
         title = "Chess Game",
-        state = rememberWindowState(width = 560.dp, height = 640.dp)
+        state = rememberWindowState(width = 580.dp, height = 680.dp)
     ) {
         MaterialTheme {
             val gameController = remember { GameController() }
@@ -29,7 +29,7 @@ fun main() = application {
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text("Chess Game", style = MaterialTheme.typography.headlineMedium)
-                ChessBoardView(gameController.state)
+                ChessBoardView(gameController)
             }
         }
     }

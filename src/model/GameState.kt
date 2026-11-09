@@ -1,12 +1,16 @@
 package model
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+
 class GameState {
     val board = Board()
 
-    var currentPlayer: Color = Color.WHITE
+    var currentPlayer: Color by mutableStateOf(Color.WHITE)
         private set
 
-    var selectedPosition: Position? = null
+    var selectedPosition: Position? by mutableStateOf(null)
         private set
 
     init {
@@ -37,7 +41,7 @@ class GameState {
         }
 
         val movingPiece = requireNotNull(board.pieceAt(move.from)) {
-            "No piece occupies position ${move.from}"
+            "No piece occupies position ${move.from.toAlgebraic()}"
         }
         require(movingPiece.color == currentPlayer) {
             "It is ${currentPlayer.name.lowercase()}\'s turn"

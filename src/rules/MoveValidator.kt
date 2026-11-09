@@ -19,7 +19,9 @@ class MoveValidator {
         }
 
         val movingPiece = board.pieceAt(move.from)
-            ?: return ValidationResult.Invalid("No piece occupies position ${move.from}")
+            ?: return ValidationResult.Invalid(
+                "No piece occupies position ${move.from.toAlgebraic()}"
+            )
 
         if (movingPiece.color != currentPlayer) {
             return ValidationResult.Invalid("It is ${currentPlayer.name.lowercase()}\'s turn")
@@ -44,7 +46,7 @@ class MoveValidator {
         } else {
             ValidationResult.Invalid(
                 "${movingPiece.type.name.lowercase().replaceFirstChar { it.uppercase() }} cannot move from " +
-                    "${move.from} to ${move.to}"
+                    "${move.from.toAlgebraic()} to ${move.to.toAlgebraic()}"
             )
         }
     }

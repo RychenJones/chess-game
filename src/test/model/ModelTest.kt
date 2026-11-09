@@ -12,6 +12,13 @@ class ModelTest {
     }
 
     @Test
+    fun `formats positions using standard chess coordinates`() {
+        assertEquals("a8", Position(0, 0).toAlgebraic())
+        assertEquals("e2", Position(6, 4).toAlgebraic())
+        assertEquals("h1", Position(7, 7).toAlgebraic())
+    }
+
+    @Test
     fun `rejects rows outside the board`() {
         assertFailsWith<IllegalArgumentException> { Position(-1, 0) }
         assertFailsWith<IllegalArgumentException> { Position(8, 0) }
