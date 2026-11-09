@@ -1,5 +1,4 @@
 To-do next:
-review moveValidator
 
 
 ## MVP Acceptance Criteria

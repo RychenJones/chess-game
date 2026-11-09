@@ -37,8 +37,8 @@ The expected minimum amount of time each Sprint for each category is as follows:
 | 11/6/26  | 6:40     | IM     | Created game state and movement validation.| 40          |
 | 11/7/26  | 5:00     | TP     | Improved agent orchestrion, built agents.  | 80          |
 | 11/7/26  | 6:20     | IM     | Optimized agents and agentic workflow.     | 30          |
-|          |          |        |                                            |             |
-|          |          |        |                                            |             |
+| 11/9/26  | 10:15    | TP     | Looked into integrating RSVP button.       | 60          |
+| 11/9/26  | 3:10     | IM     |                                            |             |
 |          |          |        |                                            |             |
 |          |          |        |                                            |             |
 |          |          |        |                                            |             |
@@ -56,6 +56,6 @@ _Note: Add more rows as needed._
 |Categroy                       |Total Time (Hours:Minutes)|
 |-------------------------------|:------------------------:|
 |IM - Individual Module         | 4:40/10                  |
-|TP - Team Project              | 2:20/4                   |
+|TP - Team Project              | 3:20/4                   |
 |MTG - Class Meetings           | 2:00/4                   |
-|**TOTAL**                      | 9:00/18                  |
+|**TOTAL**                      | 10:00/18                  |
