@@ -38,8 +38,8 @@ The expected minimum amount of time each Sprint for each category is as follows:
 | 11/7/26  | 5:00     | TP     | Improved agent orchestrion, built agents.  | 80          |
 | 11/7/26  | 6:20     | IM     | Optimized agents and agentic workflow.     | 30          |
 | 11/9/26  | 10:15    | TP     | Looked into integrating RSVP button.       | 60          |
-| 11/9/26  | 3:10     | IM     |                                            |             |
-|          |          |        |                                            |             |
+| 11/9/26  | 3:10     | IM     | Piece design and movement, error messages. | 60          |
+| 11/10/26 | 9:40     | IM     |                                            |             |
 |          |          |        |                                            |             |
 |          |          |        |                                            |             |
 |          |          |        |                                            |             |
@@ -55,7 +55,7 @@ _Note: Add more rows as needed._
 
 |Categroy                       |Total Time (Hours:Minutes)|
 |-------------------------------|:------------------------:|
-|IM - Individual Module         | 4:40/10                  |
+|IM - Individual Module         | 5:40/10                  |
 |TP - Team Project              | 3:20/4                   |
 |MTG - Class Meetings           | 2:00/4                   |
-|**TOTAL**                      | 10:00/18                  |
+|**TOTAL**                      | 11:00/18                  |

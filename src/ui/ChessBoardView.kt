@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -72,7 +73,25 @@ fun ChessBoardView(
     Column(modifier = Modifier.padding(bottom = 16.dp)) {
         Box(
             modifier = Modifier
-                .width(536.dp)
+                .width(560.dp)
+                .padding(end = 24.dp)
+                .height(40.dp),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            TextButton(
+                onClick = {
+                    controller.reset()
+                    selectedPosition.value = null
+                    feedbackMessage.value = "Game reset — White's turn"
+                }
+            ) {
+                Text("Reset")
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .width(560.dp)
                 .height(56.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -92,66 +111,69 @@ fun ChessBoardView(
             }
         }
 
-        Row {
-            Column {
-                repeat(8) { row ->
-                    CoordinateLabel(
-                        label = (8 - row).toString(),
-                        modifier = Modifier
-                            .width(24.dp)
-                            .height(64.dp)
-                    )
+        Box(modifier = Modifier.width(560.dp)) {
+            Row {
+                Column {
+                    repeat(8) { row ->
+                        CoordinateLabel(
+                            label = (8 - row).toString(),
+                            modifier = Modifier
+                                .width(24.dp)
+                                .height(64.dp)
+                        )
+                    }
                 }
-            }
 
-            Column {
-                repeat(8) { row ->
-                    Row {
-                        repeat(8) { column ->
-                            val position = Position(row, column)
-                            val piece = state.board.pieceAt(position)
-                            val isSelected = selectedPosition.value == position
-                            val squareColor = if (isSelected) {
-                                UiColor(0xFFF6E27F)
-                            } else if ((row + column) % 2 == 0) {
-                                UiColor(0xFFF0D9B5)
-                            } else {
-                                UiColor(0xFFB58863)
-                            }
+                Column {
+                    repeat(8) { row ->
+                        Row {
+                            repeat(8) { column ->
+                                val position = Position(row, column)
+                                val piece = state.board.pieceAt(position)
+                                val isSelected = selectedPosition.value == position
+                                val squareColor = if (isSelected) {
+                                    UiColor(0xFFF6E27F)
+                                } else if ((row + column) % 2 == 0) {
+                                    UiColor(0xFFF0D9B5)
+                                } else {
+                                    UiColor(0xFFB58863)
+                                }
 
-                            Box(
-                                modifier = Modifier
-                                    .size(64.dp)
-                                    .background(squareColor)
-                                    .clickable {
-                                        handleSquareClick(position)
+                                Box(
+                                    modifier = Modifier
+                                        .size(64.dp)
+                                        .background(squareColor)
+                                        .clickable {
+                                            handleSquareClick(position)
+                                        }
+                                        .semantics {
+                                            contentDescription = piece?.let {
+                                                "${pieceDescription(it)} on ${position.toAlgebraic()}"
+                                            } ?: "Empty square ${position.toAlgebraic()}"
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    piece?.let { currentPiece ->
+                                        ChessPieceView(currentPiece)
                                     }
-                                    .semantics {
-                                        contentDescription = piece?.let {
-                                            "${pieceDescription(it)} on ${position.toAlgebraic()}"
-                                        } ?: "Empty square ${position.toAlgebraic()}"
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                piece?.let { currentPiece ->
-                                    ChessPieceView(currentPiece)
                                 }
                             }
                         }
                     }
-                }
 
-                Row {
-                    ('a'..'h').forEach { file ->
-                        CoordinateLabel(
-                            label = file.toString(),
-                            modifier = Modifier
-                                .width(64.dp)
-                                .height(24.dp)
-                        )
+                    Row {
+                        ('a'..'h').forEach { file ->
+                            CoordinateLabel(
+                                label = file.toString(),
+                                modifier = Modifier
+                                    .width(64.dp)
+                                    .height(24.dp)
+                            )
+                        }
                     }
                 }
             }
+
         }
     }
 }

@@ -18,7 +18,7 @@ fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
         title = "Chess Game",
-        state = rememberWindowState(width = 580.dp, height = 680.dp)
+        state = rememberWindowState(width = 580.dp, height = 720.dp)
     ) {
         MaterialTheme {
             val gameController = remember { GameController() }
