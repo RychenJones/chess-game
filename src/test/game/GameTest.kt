@@ -123,4 +123,40 @@ class GameTest {
         assertEquals(null, state.board.pieceAt(Position(6, 7)))
         assertEquals(Color.WHITE, state.currentPlayer)
     }
+
+    @Test
+    fun `controller undoes only the most recent move`() {
+        val controller = GameController()
+
+        controller.select(Position(6, 4))
+        assertIs<MoveResult.Success>(controller.tryMove(Position(5, 4)))
+        assertEquals(true, controller.canUndo)
+
+        assertEquals(true, controller.undo())
+        assertEquals(PieceType.PAWN, controller.state.board.pieceAt(Position(6, 4))?.type)
+        assertEquals(null, controller.state.board.pieceAt(Position(5, 4)))
+        assertEquals(Color.WHITE, controller.state.currentPlayer)
+        assertEquals(false, controller.canUndo)
+        assertEquals(false, controller.undo())
+    }
+
+    @Test
+    fun `controller undo restores a captured piece`() {
+        val controller = GameController()
+        val state = controller.state
+        val whitePawn = state.board.remove(Position(6, 0))!!
+        val blackPawn = state.board.remove(Position(1, 1))!!
+        whitePawn.position = Position(3, 0)
+        blackPawn.position = Position(2, 1)
+        state.board.add(whitePawn)
+        state.board.add(blackPawn)
+
+        controller.select(Position(3, 0))
+        assertIs<MoveResult.Success>(controller.tryMove(Move(Position(3, 0), Position(2, 1))))
+
+        assertEquals(true, controller.undo())
+        assertEquals(whitePawn.type, state.board.pieceAt(Position(3, 0))?.type)
+        assertEquals(blackPawn.type, state.board.pieceAt(Position(2, 1))?.type)
+        assertEquals(Color.WHITE, state.currentPlayer)
+    }
 }

@@ -32,6 +32,24 @@ class GameState {
         playerInCheck = color
     }
 
+    internal fun snapshot(): GameStateSnapshot = GameStateSnapshot(
+        board = board.copy(),
+        currentPlayer = currentPlayer,
+        selectedPosition = selectedPosition,
+        playerInCheck = playerInCheck
+    )
+
+    internal fun restore(snapshot: GameStateSnapshot) {
+        board.restoreFrom(snapshot.board)
+        currentPlayer = snapshot.currentPlayer
+        selectedPosition = snapshot.selectedPosition
+        playerInCheck = snapshot.playerInCheck
+    }
+
+    internal fun clearSelection() {
+        selectedPosition = null
+    }
+
     fun select(position: Position): Boolean {
         val piece = board.pieceAt(position)
         val canSelect = piece?.color == currentPlayer
@@ -86,3 +104,10 @@ class GameState {
         }
     }
 }
+
+internal data class GameStateSnapshot(
+    val board: Board,
+    val currentPlayer: Color,
+    val selectedPosition: Position?,
+    val playerInCheck: Color?
+)

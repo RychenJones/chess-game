@@ -4,6 +4,9 @@ import model.GameState
 import model.Move
 import model.Piece
 import model.Position
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import rules.CheckDetector
 import rules.MoveValidator
 import rules.ValidationResult
@@ -13,6 +16,11 @@ class GameController(
     private val validator: MoveValidator = MoveValidator(),
     private val checkDetector: CheckDetector = CheckDetector(validator)
 ) {
+    var canUndo: Boolean by mutableStateOf(false)
+        private set
+
+    private var undoSnapshot: model.GameStateSnapshot? = null
+
     fun select(position: Position): Boolean =
         state.select(position)
 
@@ -39,10 +47,12 @@ class GameController(
                     )
                 }
 
+                undoSnapshot = state.snapshot()
                 val captured = state.applyMove(move)
                 state.setPlayerInCheck(
                     state.currentPlayer.takeIf { checkDetector.isInCheck(state.board, it) }
                 )
+                canUndo = true
                 MoveResult.Success(captured)
             }
 
@@ -53,6 +63,18 @@ class GameController(
 
     fun reset() {
         state.reset()
+        undoSnapshot = null
+        canUndo = false
+    }
+
+    fun undo(): Boolean {
+        val snapshot = undoSnapshot ?: return false
+
+        state.restore(snapshot)
+        state.clearSelection()
+        undoSnapshot = null
+        canUndo = false
+        return true
     }
 }
 

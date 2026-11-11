@@ -48,6 +48,13 @@ class Board {
         }
     }
 
+    fun restoreFrom(source: Board) {
+        clear()
+        source.pieces().forEach { piece ->
+            add(Piece(piece.color, piece.type, piece.position))
+        }
+    }
+
     /**
      * Returns the active pieces without maintaining a second piece collection.
      * The position map remains the single source of truth.

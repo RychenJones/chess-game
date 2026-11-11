@@ -65,7 +65,8 @@ The following items I plan to fix, improve, and/or add to this project in the fu
 * [ ] Add castling, including the restrictions on the king and rook movement.
 * [ ] Add en passant captures.
 * [ ] Add move history and standard algebraic move notation.
-* [ ] Add undo and redo for completed moves.
+* [x] Add undo for the most recent completed move.
+* [ ] Add redo and multi-move history.
 
 ### Other improvements
 

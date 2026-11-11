@@ -85,14 +85,28 @@ fun ChessBoardView(
                 .height(40.dp),
             contentAlignment = Alignment.CenterEnd
         ) {
-            TextButton(
-                onClick = {
-                    controller.reset()
-                    selectedPosition.value = null
-                    feedbackMessage.value = "Game reset — White's turn"
+            Row {
+                TextButton(
+                    onClick = {
+                        if (controller.undo()) {
+                            selectedPosition.value = null
+                            val playerName = state.currentPlayer.name.lowercase().replaceFirstChar { it.uppercase() }
+                            feedbackMessage.value = "Move undone — $playerName's turn"
+                        }
+                    },
+                    enabled = controller.canUndo
+                ) {
+                    Text("Undo")
                 }
-            ) {
-                Text("Reset")
+                TextButton(
+                    onClick = {
+                        controller.reset()
+                        selectedPosition.value = null
+                        feedbackMessage.value = "Game reset — White's turn"
+                    }
+                ) {
+                    Text("Reset")
+                }
             }
         }
 
