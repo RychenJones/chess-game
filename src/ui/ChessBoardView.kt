@@ -51,6 +51,13 @@ fun ChessBoardView(
             return
         }
 
+        if (currentSelection == position) {
+            controller.deselect()
+            selectedPosition.value = null
+            feedbackMessage.value = "Selection cleared"
+            return
+        }
+
         when (val result = controller.tryMove(position)) {
             is MoveResult.Success -> {
                 selectedPosition.value = null
@@ -72,6 +79,8 @@ fun ChessBoardView(
                 feedbackMessage.value = result.reason
                 if (controller.select(position)) {
                     selectedPosition.value = position
+                } else {
+                    selectedPosition.value = null
                 }
             }
         }

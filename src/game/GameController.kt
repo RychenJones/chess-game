@@ -24,6 +24,10 @@ class GameController(
     fun select(position: Position): Boolean =
         state.select(position)
 
+    fun deselect() {
+        state.clearSelection()
+    }
+
     fun tryMove(to: Position): MoveResult {
         val from = state.selectedPosition
             ?: return MoveResult.Failure("Select a piece before moving")
