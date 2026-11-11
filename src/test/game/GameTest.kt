@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import model.Color
 import model.Move
+import model.Piece
 import model.PieceType
 import model.Position
 
@@ -66,5 +67,60 @@ class GameTest {
         assertEquals(Color.WHITE, controller.state.currentPlayer)
         assertEquals(PieceType.PAWN, controller.state.board.pieceAt(Position(6, 4))?.type)
         assertEquals(null, controller.state.board.pieceAt(Position(5, 4)))
+    }
+
+    @Test
+    fun `controller reports check after a successful move`() {
+        val controller = GameController()
+        val state = controller.state
+        state.board.pieces().forEach { state.board.remove(it.position) }
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(7, 4)))
+        state.board.add(Piece(Color.WHITE, PieceType.ROOK, Position(6, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 4)))
+
+        controller.select(Position(6, 4))
+        val result = controller.tryMove(Position(1, 4))
+
+        assertIs<MoveResult.Success>(result)
+        assertEquals(Color.BLACK, state.playerInCheck)
+    }
+
+    @Test
+    fun `controller rejects a king moving into check`() {
+        val controller = GameController()
+        val state = controller.state
+        state.board.pieces().forEach { state.board.remove(it.position) }
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(7, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.ROOK, Position(0, 5)))
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 0)))
+
+        controller.select(Position(7, 4))
+        val result = controller.tryMove(Position(7, 5))
+
+        assertIs<MoveResult.Failure>(result)
+        assertEquals("Move would leave white king in check", result.reason)
+        assertEquals(PieceType.KING, state.board.pieceAt(Position(7, 4))?.type)
+        assertEquals(null, state.board.pieceAt(Position(7, 5)))
+        assertEquals(Color.WHITE, state.currentPlayer)
+    }
+
+    @Test
+    fun `controller rejects a move that exposes its own king`() {
+        val controller = GameController()
+        val state = controller.state
+        state.board.pieces().forEach { state.board.remove(it.position) }
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(7, 4)))
+        state.board.add(Piece(Color.WHITE, PieceType.ROOK, Position(6, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.ROOK, Position(0, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 0)))
+
+        controller.select(Position(6, 4))
+        val result = controller.tryMove(Position(6, 7))
+
+        assertIs<MoveResult.Failure>(result)
+        assertEquals("Move would leave white king in check", result.reason)
+        assertEquals(PieceType.ROOK, state.board.pieceAt(Position(6, 4))?.type)
+        assertEquals(null, state.board.pieceAt(Position(6, 7)))
+        assertEquals(Color.WHITE, state.currentPlayer)
     }
 }

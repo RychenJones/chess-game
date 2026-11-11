@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import game.GameController
 import game.MoveResult
 import model.Piece
+import model.PieceType
 import model.Position
 
 @Composable
@@ -56,9 +57,15 @@ fun ChessBoardView(
                 val captureMessage = result.captured?.let {
                     " — captured ${pieceDescription(it)}"
                 }.orEmpty()
+                val currentPlayerName = state.currentPlayer.name.lowercase().replaceFirstChar { it.uppercase() }
+                val checkMessage = if (state.playerInCheck == state.currentPlayer) {
+                    " ${currentPlayerName} is in check."
+                } else {
+                    ""
+                }
                 feedbackMessage.value =
                     "Move complete$captureMessage. " +
-                        "${state.currentPlayer.name.lowercase().replaceFirstChar { it.uppercase() }}'s turn"
+                        "$currentPlayerName's turn.$checkMessage"
             }
 
             is MoveResult.Failure -> {
@@ -97,7 +104,9 @@ fun ChessBoardView(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "Current player: ${state.currentPlayer.name.lowercase().replaceFirstChar { it.uppercase() }}",
+                    text = "Current player: " +
+                        state.currentPlayer.name.lowercase().replaceFirstChar { it.uppercase() } +
+                        if (state.playerInCheck == state.currentPlayer) " — in check" else "",
                     style = MaterialTheme.typography.labelLarge,
                     textAlign = TextAlign.Center
                 )
@@ -131,7 +140,11 @@ fun ChessBoardView(
                                 val position = Position(row, column)
                                 val piece = state.board.pieceAt(position)
                                 val isSelected = selectedPosition.value == position
-                                val squareColor = if (isSelected) {
+                                val isCheckedKing = piece?.type == PieceType.KING &&
+                                    state.playerInCheck == piece.color
+                                val squareColor = if (isCheckedKing) {
+                                    UiColor(0xFFE57373)
+                                } else if (isSelected) {
                                     UiColor(0xFFF6E27F)
                                 } else if ((row + column) % 2 == 0) {
                                     UiColor(0xFFF0D9B5)
@@ -148,7 +161,8 @@ fun ChessBoardView(
                                         }
                                         .semantics {
                                             contentDescription = piece?.let {
-                                                "${pieceDescription(it)} on ${position.toAlgebraic()}"
+                                                val checkDescription = if (isCheckedKing) ", in check" else ""
+                                                "${pieceDescription(it)} on ${position.toAlgebraic()}$checkDescription"
                                             } ?: "Empty square ${position.toAlgebraic()}"
                                         },
                                     contentAlignment = Alignment.Center

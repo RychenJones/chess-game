@@ -56,7 +56,9 @@ The following items I plan to fix, improve, and/or add to this project in the fu
 
 ### Standard chess functionality
 
-* [ ] Detect check and enforce king safety.
+* [x] Detect and display check when a king is attacked.
+* [ ] Undo move button
+* [x] Enforce king safety by rejecting moves that leave a king in check.
 * [ ] Detect checkmate and stalemate.
 * [ ] Detect draw conditions, including insufficient material, the fifty-move rule, and threefold repetition.
 * [ ] Add pawn promotion with a choice of promoted piece.

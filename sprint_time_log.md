@@ -40,7 +40,7 @@ The expected minimum amount of time each Sprint for each category is as follows:
 | 11/9/26  | 10:15    | TP     | Looked into integrating RSVP button.       | 60          |
 | 11/9/26  | 3:10     | IM     | Piece design and movement, error messages. | 60          |
 | 11/10/26 | 9:40     | IM     | Reset button, made a major update to README| 20          |
-|          |          |        |                                            |             |
+| 11/11/26 | 3:55     | IM     |                                            |             |
 |          |          |        |                                            |             |
 |          |          |        |                                            |             |
 |          |          |        |                                            |             |

@@ -13,6 +13,9 @@ class GameState {
     var selectedPosition: Position? by mutableStateOf(null)
         private set
 
+    var playerInCheck: Color? by mutableStateOf(null)
+        private set
+
     init {
         reset()
     }
@@ -22,6 +25,11 @@ class GameState {
         setupPieces()
         currentPlayer = Color.WHITE
         selectedPosition = null
+        playerInCheck = null
+    }
+
+    internal fun setPlayerInCheck(color: Color?) {
+        playerInCheck = color
     }
 
     fun select(position: Position): Boolean {

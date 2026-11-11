@@ -41,6 +41,13 @@ class Board {
         piecesByPosition.clear()
     }
 
+    /** Returns an independent board copy for safe move simulation. */
+    fun copy(): Board = Board().also { copiedBoard ->
+        pieces().forEach { piece ->
+            copiedBoard.add(Piece(piece.color, piece.type, piece.position))
+        }
+    }
+
     /**
      * Returns the active pieces without maintaining a second piece collection.
      * The position map remains the single source of truth.
