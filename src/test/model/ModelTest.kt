@@ -160,4 +160,17 @@ class ModelTest {
         assertEquals(null, state.board.pieceAt(Position(5, 0)))
         assertEquals(32, state.board.pieces().size)
     }
+
+    @Test
+    fun `reset clears game-ending state`() {
+        val state = GameState()
+        state.setPlayerInCheck(Color.BLACK)
+        state.setGameResult(GameStatus.CHECKMATE, Color.WHITE)
+
+        state.reset()
+
+        assertEquals(GameStatus.ACTIVE, state.gameStatus)
+        assertEquals(null, state.winner)
+        assertEquals(null, state.playerInCheck)
+    }
 }

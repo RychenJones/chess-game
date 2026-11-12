@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import game.GameController
 import game.MoveResult
+import model.GameStatus
 import model.Piece
 import model.PieceType
 import model.Position
@@ -65,14 +66,17 @@ fun ChessBoardView(
                     " — captured ${pieceDescription(it)}"
                 }.orEmpty()
                 val currentPlayerName = state.currentPlayer.name.lowercase().replaceFirstChar { it.uppercase() }
-                val checkMessage = if (state.playerInCheck == state.currentPlayer) {
-                    " ${currentPlayerName} is in check."
+                feedbackMessage.value = if (state.gameStatus == GameStatus.CHECKMATE) {
+                    checkmateMessage(state.winner)
                 } else {
-                    ""
-                }
-                feedbackMessage.value =
+                    val checkMessage = if (state.playerInCheck == state.currentPlayer) {
+                        " ${currentPlayerName} is in check."
+                    } else {
+                        ""
+                    }
                     "Move complete$captureMessage. " +
                         "$currentPlayerName's turn.$checkMessage"
+                }
             }
 
             is MoveResult.Failure -> {
@@ -127,9 +131,13 @@ fun ChessBoardView(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "Current player: " +
-                        state.currentPlayer.name.lowercase().replaceFirstChar { it.uppercase() } +
-                        if (state.playerInCheck == state.currentPlayer) " — in check" else "",
+                    text = if (state.gameStatus == GameStatus.CHECKMATE) {
+                        checkmateMessage(state.winner)
+                    } else {
+                        "Current player: " +
+                            state.currentPlayer.name.lowercase().replaceFirstChar { it.uppercase() } +
+                            if (state.playerInCheck == state.currentPlayer) " — in check" else ""
+                    },
                     style = MaterialTheme.typography.labelLarge,
                     textAlign = TextAlign.Center
                 )
@@ -179,7 +187,7 @@ fun ChessBoardView(
                                     modifier = Modifier
                                         .size(64.dp)
                                         .background(squareColor)
-                                        .clickable {
+                                        .clickable(enabled = state.gameStatus != GameStatus.CHECKMATE) {
                                             handleSquareClick(position)
                                         }
                                         .semantics {
@@ -232,3 +240,8 @@ private fun CoordinateLabel(label: String, modifier: Modifier) {
 internal fun pieceDescription(piece: Piece): String =
     "${piece.color.name.lowercase().replaceFirstChar { it.uppercase() }} " +
         piece.type.name.lowercase().replaceFirstChar { it.uppercase() }
+
+internal fun checkmateMessage(winner: model.Color?): String {
+    val winnerName = winner?.name?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "Unknown"
+    return "Checkmate — $winnerName wins"
+}

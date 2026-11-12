@@ -16,6 +16,12 @@ class GameState {
     var playerInCheck: Color? by mutableStateOf(null)
         private set
 
+    var gameStatus: GameStatus by mutableStateOf(GameStatus.ACTIVE)
+        private set
+
+    var winner: Color? by mutableStateOf(null)
+        private set
+
     init {
         reset()
     }
@@ -26,10 +32,17 @@ class GameState {
         currentPlayer = Color.WHITE
         selectedPosition = null
         playerInCheck = null
+        gameStatus = GameStatus.ACTIVE
+        winner = null
     }
 
     internal fun setPlayerInCheck(color: Color?) {
         playerInCheck = color
+    }
+
+    internal fun setGameResult(status: GameStatus, winningColor: Color?) {
+        gameStatus = status
+        winner = winningColor
     }
 
     internal fun snapshot(): GameStateSnapshot = GameStateSnapshot(

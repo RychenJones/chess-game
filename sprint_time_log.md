@@ -42,7 +42,7 @@ The expected minimum amount of time each Sprint for each category is as follows:
 | 11/10/26 | 9:40     | IM     | Reset button, made a major update to README| 20          |
 | 11/11/26 | 10:15    | MTG    | Group presentations.                       | 60          |
 | 11/11/26 | 3:55     | IM     | Undo button, check logic, start checkmate. | 60          |
-|          |          |        |                                            |             |
+| 11/11/26 | 9:10     | IM     |                                            |             |
 |          |          |        |                                            |             |
 |          |          |        |                                            |             |
 |          |          |        |                                            |             |

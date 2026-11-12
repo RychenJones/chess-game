@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import model.Color
+import model.GameStatus
 import model.Move
 import model.Piece
 import model.PieceType
@@ -83,6 +84,8 @@ class GameTest {
 
         assertIs<MoveResult.Success>(result)
         assertEquals(Color.BLACK, state.playerInCheck)
+        assertEquals(GameStatus.ACTIVE, state.gameStatus)
+        assertEquals(null, state.winner)
     }
 
     @Test
@@ -122,6 +125,30 @@ class GameTest {
         assertEquals(PieceType.ROOK, state.board.pieceAt(Position(6, 4))?.type)
         assertEquals(null, state.board.pieceAt(Position(6, 7)))
         assertEquals(Color.WHITE, state.currentPlayer)
+    }
+
+    @Test
+    fun `controller detects checkmate when the checked player has no legal moves`() {
+        val controller = GameController()
+        val state = controller.state
+        state.board.pieces().forEach { state.board.remove(it.position) }
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 0)))
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(2, 2)))
+        state.board.add(Piece(Color.WHITE, PieceType.QUEEN, Position(7, 1)))
+
+        controller.select(Position(7, 1))
+        val result = controller.tryMove(Position(1, 1))
+
+        assertIs<MoveResult.Success>(result)
+        assertEquals(Color.BLACK, state.playerInCheck)
+        assertEquals(GameStatus.CHECKMATE, state.gameStatus)
+        assertEquals(Color.WHITE, state.winner)
+
+        val attemptedMove = controller.tryMove(Position(0, 1))
+
+        assertEquals(MoveResult.Failure("Game over — White wins"), attemptedMove)
+        assertEquals(PieceType.KING, state.board.pieceAt(Position(0, 0))?.type)
+        assertEquals(Color.BLACK, state.currentPlayer)
     }
 
     @Test

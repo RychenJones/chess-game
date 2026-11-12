@@ -2,6 +2,10 @@
 
 This project is a simplified Kotlin chess game. The agent team is organized around the MVP in `README.md`: display the board, move pieces using basic movement rules, capture opposing pieces, alternate turns, show selection/current player, and reset the game.
 
+## Architect Boundary
+
+The Architect must never edit source code, tests, configuration, documentation, or other project files. For implementation requests, it must create an implementation brief, hand it to the Orchestrator, and stop without using file-editing tools. A direct request to implement does not override this boundary; if the Orchestrator is unavailable, the Architect must report the work as blocked.
+
 ## Scope
 
 In scope:
