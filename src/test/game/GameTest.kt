@@ -115,6 +115,118 @@ class GameTest {
     }
 
     @Test
+    fun `controller exposes and applies white en passant`() {
+        val controller = GameController()
+        val state = controller.state
+        state.board.pieces().forEach { state.board.remove(it.position) }
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(7, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 4)))
+        state.board.add(Piece(Color.WHITE, PieceType.ROOK, Position(7, 0)))
+        state.board.add(Piece(Color.WHITE, PieceType.PAWN, Position(3, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.PAWN, Position(1, 5)))
+
+        state.select(Position(7, 0))
+        state.applyMove(Move(Position(7, 0), Position(7, 1)))
+        state.select(Position(1, 5))
+        state.applyMove(Move(Position(1, 5), Position(3, 5)))
+
+        controller.select(Position(3, 4))
+        assertTrue(Position(2, 5) in controller.legalDestinationsForSelected())
+        val result = controller.tryMove(Position(2, 5))
+
+        val success = assertIs<MoveResult.Success>(result)
+        assertEquals(PieceType.PAWN, success.captured?.type)
+        assertEquals(Color.BLACK, success.captured?.color)
+        assertEquals(PieceType.PAWN, state.board.pieceAt(Position(2, 5))?.type)
+        assertEquals(null, state.board.pieceAt(Position(3, 5)))
+        assertEquals(Color.BLACK, state.currentPlayer)
+    }
+
+    @Test
+    fun `controller applies black en passant`() {
+        val controller = GameController()
+        val state = controller.state
+        state.board.pieces().forEach { state.board.remove(it.position) }
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(7, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.ROOK, Position(0, 0)))
+        state.board.add(Piece(Color.BLACK, PieceType.PAWN, Position(4, 4)))
+        state.board.add(Piece(Color.WHITE, PieceType.PAWN, Position(6, 5)))
+
+        state.select(Position(6, 5))
+        state.applyMove(Move(Position(6, 5), Position(4, 5)))
+
+        controller.select(Position(4, 4))
+        assertTrue(Position(5, 5) in controller.legalDestinationsForSelected())
+        val result = controller.tryMove(Position(5, 5))
+
+        val success = assertIs<MoveResult.Success>(result)
+        assertEquals(PieceType.PAWN, success.captured?.type)
+        assertEquals(Color.WHITE, success.captured?.color)
+        assertEquals(PieceType.PAWN, state.board.pieceAt(Position(5, 5))?.type)
+        assertEquals(null, state.board.pieceAt(Position(4, 5)))
+        assertEquals(Color.WHITE, state.currentPlayer)
+    }
+
+    @Test
+    fun `undo restores en passant metadata and reset clears it`() {
+        val controller = GameController()
+        val state = controller.state
+        state.board.pieces().forEach { state.board.remove(it.position) }
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(7, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 4)))
+        state.board.add(Piece(Color.WHITE, PieceType.ROOK, Position(7, 0)))
+        state.board.add(Piece(Color.WHITE, PieceType.PAWN, Position(3, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.PAWN, Position(1, 5)))
+
+        state.select(Position(7, 0))
+        state.applyMove(Move(Position(7, 0), Position(7, 1)))
+        state.select(Position(1, 5))
+        state.applyMove(Move(Position(1, 5), Position(3, 5)))
+        controller.select(Position(3, 4))
+        assertIs<MoveResult.Success>(controller.tryMove(Position(2, 5)))
+
+        assertTrue(controller.undo())
+        assertEquals(Position(3, 5), state.lastMove?.to)
+        assertEquals(PieceType.PAWN, state.board.pieceAt(Position(3, 4))?.type)
+        assertEquals(PieceType.PAWN, state.board.pieceAt(Position(3, 5))?.type)
+        assertEquals(Color.WHITE, state.currentPlayer)
+
+        controller.reset()
+
+        assertEquals(null, state.lastMove)
+    }
+
+    @Test
+    fun `en passant is rejected when it exposes the moving king`() {
+        val controller = GameController()
+        val state = controller.state
+        state.board.pieces().forEach { state.board.remove(it.position) }
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(3, 0)))
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 0)))
+        state.board.add(Piece(Color.BLACK, PieceType.ROOK, Position(3, 7)))
+        state.board.add(Piece(Color.WHITE, PieceType.ROOK, Position(7, 0)))
+        state.board.add(Piece(Color.WHITE, PieceType.PAWN, Position(3, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.PAWN, Position(1, 5)))
+
+        state.select(Position(7, 0))
+        state.applyMove(Move(Position(7, 0), Position(6, 0)))
+        state.select(Position(1, 5))
+        state.applyMove(Move(Position(1, 5), Position(3, 5)))
+
+        controller.select(Position(3, 4))
+        assertTrue(Position(2, 5) !in controller.legalDestinationsForSelected())
+        val result = controller.tryMove(Position(2, 5))
+
+        assertEquals(
+            MoveResult.Failure("Move would leave white king in check"),
+            result
+        )
+        assertEquals(PieceType.PAWN, state.board.pieceAt(Position(3, 4))?.type)
+        assertEquals(PieceType.PAWN, state.board.pieceAt(Position(3, 5))?.type)
+    }
+
+    @Test
     fun `controller reset restores the initial state`() {
         val controller = GameController()
         controller.select(Position(6, 4))

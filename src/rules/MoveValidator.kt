@@ -4,6 +4,7 @@ import kotlin.math.abs
 import model.Board
 import model.Color
 import model.GameState
+import model.LastMove
 import model.Move
 import model.Piece
 import model.PieceType
@@ -11,9 +12,14 @@ import model.Position
 
 class MoveValidator {
     fun validate(state: GameState, move: Move): ValidationResult =
-        validate(state.board, state.currentPlayer, move)
+        validate(state.board, state.currentPlayer, move, state.lastMove)
 
-    fun validate(board: Board, currentPlayer: Color, move: Move): ValidationResult {
+    fun validate(
+        board: Board,
+        currentPlayer: Color,
+        move: Move,
+        lastMove: LastMove? = null
+    ): ValidationResult {
         if (move.from == move.to) {
             return ValidationResult.Invalid("A piece cannot move to its current position")
         }
@@ -33,7 +39,7 @@ class MoveValidator {
         }
 
         val validMovement = when (movingPiece.type) {
-            PieceType.PAWN -> isValidPawnMove(board, movingPiece, move, destinationPiece)
+            PieceType.PAWN -> isValidPawnMove(board, movingPiece, move, destinationPiece, lastMove)
             PieceType.ROOK -> isValidRookMove(board, move)
             PieceType.KNIGHT -> isValidKnightMove(move)
             PieceType.BISHOP -> isValidBishopMove(board, move)
@@ -55,7 +61,8 @@ class MoveValidator {
         board: Board,
         piece: Piece,
         move: Move,
-        destination: Piece?
+        destination: Piece?,
+        lastMove: LastMove?
     ): Boolean {
         val direction = if (piece.color == Color.WHITE) -1 else 1
         val startingRow = if (piece.color == Color.WHITE) 6 else 1
@@ -76,7 +83,11 @@ class MoveValidator {
             return board.pieceAt(middle) == null
         }
 
-        return abs(columnDelta) == 1 && rowDelta == direction && destination != null
+        if (abs(columnDelta) == 1 && rowDelta == direction && destination != null) {
+            return true
+        }
+
+        return EnPassant.capturedPawnPosition(board, piece.color, move, lastMove) != null
     }
 
     private fun isValidRookMove(board: Board, move: Move): Boolean {

@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import rules.CheckDetector
+import rules.EnPassant
 import rules.LegalMoveFinder
 import rules.MoveValidator
 import rules.ValidationResult
@@ -47,7 +48,7 @@ class GameController(
         }
 
         return legalMoveFinder
-            .legalMoves(state.board, state.currentPlayer)
+            .legalMoves(state)
             .asSequence()
             .filter { it.from == selectedPosition }
             .map { it.to }
@@ -78,6 +79,12 @@ class GameController(
             ValidationResult.Valid -> {
                 val movingColor = state.currentPlayer
                 val simulatedBoard = state.board.copy()
+                EnPassant.capturedPawnPosition(
+                    simulatedBoard,
+                    movingColor,
+                    move,
+                    state.lastMove
+                )?.let(simulatedBoard::remove)
                 simulatedBoard.move(move.from, move.to)
                 if (checkDetector.isInCheck(simulatedBoard, movingColor)) {
                     return MoveResult.Failure(
@@ -86,12 +93,18 @@ class GameController(
                 }
 
                 undoSnapshot = state.snapshot()
-                val captured = state.applyMove(move)
+                val capturedPosition = EnPassant.capturedPawnPosition(
+                    state.board,
+                    movingColor,
+                    move,
+                    state.lastMove
+                )
+                val captured = state.applyMove(move, capturedPosition)
                 state.setPlayerInCheck(
                     state.currentPlayer.takeIf { checkDetector.isInCheck(state.board, it) }
                 )
                 if (
-                    legalMoveFinder.legalMoves(state.board, state.currentPlayer).isEmpty()
+                    legalMoveFinder.legalMoves(state).isEmpty()
                 ) {
                     val terminalStatus = if (state.playerInCheck != null) {
                         GameStatus.CHECKMATE

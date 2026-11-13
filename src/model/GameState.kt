@@ -22,6 +22,9 @@ class GameState {
     var winner: Color? by mutableStateOf(null)
         private set
 
+    var lastMove: LastMove? by mutableStateOf(null)
+        private set
+
     init {
         reset()
     }
@@ -34,6 +37,7 @@ class GameState {
         playerInCheck = null
         gameStatus = GameStatus.ACTIVE
         winner = null
+        lastMove = null
     }
 
     internal fun setPlayerInCheck(color: Color?) {
@@ -51,7 +55,8 @@ class GameState {
         selectedPosition = selectedPosition,
         playerInCheck = playerInCheck,
         gameStatus = gameStatus,
-        winner = winner
+        winner = winner,
+        lastMove = lastMove
     )
 
     internal fun restore(snapshot: GameStateSnapshot) {
@@ -61,6 +66,7 @@ class GameState {
         playerInCheck = snapshot.playerInCheck
         gameStatus = snapshot.gameStatus
         winner = snapshot.winner
+        lastMove = snapshot.lastMove
     }
 
     internal fun clearSelection() {
@@ -78,7 +84,7 @@ class GameState {
      * Applies a move that has already passed movement-rule validation.
      * Returns the captured piece, if any.
      */
-    fun applyMove(move: Move): Piece? {
+    fun applyMove(move: Move, capturedPosition: Position? = null): Piece? {
         require(move.from == selectedPosition) {
             "The move must begin at the selected position"
         }
@@ -95,7 +101,13 @@ class GameState {
             "A piece cannot move onto a friendly piece"
         }
 
-        val capturedPiece = board.move(move.from, move.to)
+        val capturedPiece = board.move(move.from, move.to, capturedPosition)
+        lastMove = LastMove(
+            from = move.from,
+            to = move.to,
+            pieceColor = movingPiece.color,
+            pieceType = movingPiece.type
+        )
         currentPlayer = currentPlayer.opposite()
         selectedPosition = null
         return capturedPiece
@@ -128,5 +140,6 @@ internal data class GameStateSnapshot(
     val selectedPosition: Position?,
     val playerInCheck: Color?,
     val gameStatus: GameStatus,
-    val winner: Color?
+    val winner: Color?,
+    val lastMove: LastMove?
 )

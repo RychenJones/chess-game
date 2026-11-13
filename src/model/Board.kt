@@ -21,16 +21,26 @@ class Board {
     }
 
     /**
-     * Moves a piece and returns any piece captured at the destination.
+     * Moves a piece and returns the captured piece.
      * Movement rules are intentionally handled outside the board.
+     * [capturedPosition] supports captures, such as en passant, where the
+     * captured piece is not on the destination square.
      */
-    fun move(from: Position, to: Position): Piece? {
+    fun move(from: Position, to: Position, capturedPosition: Position? = null): Piece? {
         require(from != to) { "A piece cannot move to its current position" }
+        require(capturedPosition != to) {
+            "A separately captured piece cannot occupy the destination square"
+        }
 
         val movingPiece = requireNotNull(remove(from)) {
             "No piece occupies position ${from.toAlgebraic()}"
         }
-        val capturedPiece = remove(to)
+        val capturedPiece = if (capturedPosition == null) remove(to) else remove(capturedPosition)
+        if (capturedPosition != null) {
+            require(pieceAt(to) == null) {
+                "A separately captured move must have an empty destination"
+            }
+        }
 
         movingPiece.position = to
         piecesByPosition[to] = movingPiece

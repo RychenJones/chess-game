@@ -39,6 +39,76 @@ class RulesTest {
     }
 
     @Test
+    fun `allows en passant only after an adjacent opposing pawn double step`() {
+        val state = enPassantState()
+
+        state.select(Position(7, 0))
+        state.applyMove(Move(Position(7, 0), Position(7, 1)))
+        state.select(Position(1, 5))
+        state.applyMove(Move(Position(1, 5), Position(3, 5)))
+
+        assertValid(state, Move(Position(3, 4), Position(2, 5)))
+    }
+
+    @Test
+    fun `rejects en passant when the opposing pawn is not adjacent`() {
+        val state = enPassantState()
+        val blackPawn = state.board.remove(Position(1, 5))!!
+        blackPawn.position = Position(1, 6)
+        state.board.add(blackPawn)
+
+        state.select(Position(7, 0))
+        state.applyMove(Move(Position(7, 0), Position(7, 1)))
+        state.select(Position(1, 6))
+        state.applyMove(Move(Position(1, 6), Position(3, 6)))
+
+        assertInvalid(state, Move(Position(3, 4), Position(2, 5)))
+    }
+
+    @Test
+    fun `rejects en passant when the adjacent opposing piece is not a pawn`() {
+        val state = enPassantState()
+
+        state.select(Position(7, 0))
+        state.applyMove(Move(Position(7, 0), Position(7, 1)))
+        state.select(Position(1, 5))
+        state.applyMove(Move(Position(1, 5), Position(3, 5)))
+        state.board.remove(Position(3, 5))
+        state.board.add(Piece(Color.BLACK, PieceType.KNIGHT, Position(3, 5)))
+
+        assertInvalid(state, Move(Position(3, 4), Position(2, 5)))
+    }
+
+    @Test
+    fun `rejects en passant onto an occupied destination`() {
+        val state = enPassantState()
+        state.board.add(Piece(Color.WHITE, PieceType.KNIGHT, Position(2, 5)))
+
+        state.select(Position(7, 0))
+        state.applyMove(Move(Position(7, 0), Position(7, 1)))
+        state.select(Position(1, 5))
+        state.applyMove(Move(Position(1, 5), Position(3, 5)))
+
+        assertInvalid(state, Move(Position(3, 4), Position(2, 5)))
+    }
+
+    @Test
+    fun `rejects an en passant opportunity after one reply`() {
+        val state = enPassantState()
+
+        state.select(Position(7, 0))
+        state.applyMove(Move(Position(7, 0), Position(7, 1)))
+        state.select(Position(1, 5))
+        state.applyMove(Move(Position(1, 5), Position(3, 5)))
+        state.select(Position(7, 1))
+        state.applyMove(Move(Position(7, 1), Position(7, 2)))
+        state.select(Position(0, 4))
+        state.applyMove(Move(Position(0, 4), Position(0, 3)))
+
+        assertInvalid(state, Move(Position(3, 4), Position(2, 5)))
+    }
+
+    @Test
     fun `allows knight to jump over pieces`() {
         val state = GameState()
 
@@ -111,5 +181,14 @@ class RulesTest {
         check(validator.validate(board, Color.WHITE, move) is ValidationResult.Invalid) {
             "Expected move $move to be invalid"
         }
+    }
+
+    private fun enPassantState(): GameState = GameState().also { state ->
+        state.board.pieces().forEach { state.board.remove(it.position) }
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(7, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 4)))
+        state.board.add(Piece(Color.WHITE, PieceType.ROOK, Position(7, 0)))
+        state.board.add(Piece(Color.WHITE, PieceType.PAWN, Position(3, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.PAWN, Position(1, 5)))
     }
 }
