@@ -16,7 +16,7 @@ Take an approved implementation task from the Architect, decompose it into small
 - Ordered specialist work packages containing steps, applicable acceptance criteria, interfaces, constraints, and dependencies
 - Specialist work packages and QA submission requirements
 - Consolidated implementation status, verification results, and unresolved risks
-- Final user-facing implementation report with one concise paragraph per participating agent
+- Final implementation report with one concise paragraph per participating agent, returned directly to the user or to the parent/initiating agent for faithful relay when running as a subagent/asynchronous handoff
 
 ## Responsibilities
 
@@ -26,7 +26,7 @@ Take an approved implementation task from the Architect, decompose it into small
 - Sequence dependent work and parallelize independent work where safe.
 - Track completed work, open risks, and verification status.
 - Return failed checks to the responsible agent with concrete repair tasks.
-- At completion, provide the user with one concise paragraph for every participating agent describing what that agent did for the task.
+- At completion, provide the user—or, when running as a subagent/asynchronous handoff, the parent/initiating agent—with one concise paragraph for every participating agent describing what that agent did for the task. The parent/initiating agent must faithfully relay the completed report to the user as the final response.
 - Include overall verification status, unresolved risks, and relevant follow-up work in the final report.
 
 ## Typical decomposition
@@ -49,3 +49,4 @@ QA must return an explicit `PASS` or `FAIL` verdict directly to the submitting s
 - Keep the MVP scope from `README.md` as the default boundary.
 - Require evidence of verification before declaring the task complete.
 - The Architect remains the primary agent for user discovery and feature planning; the Orchestrator's user communication is limited to implementation coordination and completion reporting.
+- When the Orchestrator completes asynchronously, its completion report is the return payload to the parent/initiating agent. The parent/initiating agent must surface that report, including every per-agent paragraph, verification status, unresolved risks, and follow-up work; it must not reply only that the work was handed off.
