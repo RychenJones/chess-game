@@ -144,6 +144,41 @@ class ModelTest {
         assertEquals(Color.BLACK, state.currentPlayer)
         assertEquals(null, state.selectedPosition)
         assertEquals(whitePawn, state.board.pieceAt(Position(2, 1)))
+        assertEquals(0, state.halfMoveClock)
+    }
+
+    @Test
+    fun `game state increments the half-move clock after a quiet move`() {
+        val state = GameState()
+        state.board.clear()
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(7, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 4)))
+        state.board.add(Piece(Color.WHITE, PieceType.ROOK, Position(7, 0)))
+
+        state.select(Position(7, 0))
+        state.applyMove(Move(Position(7, 0), Position(6, 0)))
+
+        assertEquals(1, state.halfMoveClock)
+    }
+
+    @Test
+    fun `game state resets the half-move clock for a pawn move`() {
+        val state = GameState()
+        state.setHalfMoveClockForTesting(37)
+        state.select(Position(6, 0))
+        state.applyMove(Move(Position(6, 0), Position(5, 0)))
+
+        assertEquals(0, state.halfMoveClock)
+    }
+
+    @Test
+    fun `reset restores the half-move clock`() {
+        val state = GameState()
+        state.setHalfMoveClockForTesting(99)
+
+        state.reset()
+
+        assertEquals(0, state.halfMoveClock)
     }
 
     @Test

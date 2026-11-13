@@ -33,6 +33,16 @@ class ChessBoardViewTest {
     }
 
     @Test
+    fun `formats insufficient material as a draw`() {
+        assertEquals("Insufficient material — draw", insufficientMaterialMessage())
+    }
+
+    @Test
+    fun `formats fifty-move rule as a draw`() {
+        assertEquals("Fifty-move rule — draw", fiftyMoveMessage())
+    }
+
+    @Test
     fun `game state exposes checkmate status for UI rendering`() {
         val state = GameState()
         state.setGameResult(GameStatus.CHECKMATE, Color.WHITE)
@@ -47,6 +57,24 @@ class ChessBoardViewTest {
         state.setGameResult(GameStatus.STALEMATE, null)
 
         assertEquals(GameStatus.STALEMATE, state.gameStatus)
+        assertEquals(null, state.winner)
+    }
+
+    @Test
+    fun `game state exposes insufficient material without a winner`() {
+        val state = GameState()
+        state.setGameResult(GameStatus.INSUFFICIENT_MATERIAL, null)
+
+        assertEquals(GameStatus.INSUFFICIENT_MATERIAL, state.gameStatus)
+        assertEquals(null, state.winner)
+    }
+
+    @Test
+    fun `game state exposes fifty-move draw without a winner`() {
+        val state = GameState()
+        state.setGameResult(GameStatus.FIFTY_MOVE_DRAW, null)
+
+        assertEquals(GameStatus.FIFTY_MOVE_DRAW, state.gameStatus)
         assertEquals(null, state.winner)
     }
 }

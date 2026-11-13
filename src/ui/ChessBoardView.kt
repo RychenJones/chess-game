@@ -70,6 +70,8 @@ fun ChessBoardView(
                 feedbackMessage.value = when (state.gameStatus) {
                     GameStatus.CHECKMATE -> checkmateMessage(state.winner)
                     GameStatus.STALEMATE -> stalemateMessage()
+                    GameStatus.INSUFFICIENT_MATERIAL -> insufficientMaterialMessage()
+                    GameStatus.FIFTY_MOVE_DRAW -> fiftyMoveMessage()
                     GameStatus.ACTIVE -> {
                         val checkMessage = if (state.playerInCheck == state.currentPlayer) {
                             " ${currentPlayerName} is in check."
@@ -137,6 +139,8 @@ fun ChessBoardView(
                     text = when (state.gameStatus) {
                         GameStatus.CHECKMATE -> checkmateMessage(state.winner)
                         GameStatus.STALEMATE -> stalemateMessage()
+                        GameStatus.INSUFFICIENT_MATERIAL -> insufficientMaterialMessage()
+                        GameStatus.FIFTY_MOVE_DRAW -> fiftyMoveMessage()
                         GameStatus.ACTIVE -> {
                             "Current player: " +
                                 state.currentPlayer.name.lowercase().replaceFirstChar { it.uppercase() } +
@@ -272,3 +276,7 @@ internal fun checkmateMessage(winner: model.Color?): String {
 }
 
 internal fun stalemateMessage(): String = "Stalemate — draw"
+
+internal fun insufficientMaterialMessage(): String = "Insufficient material — draw"
+
+internal fun fiftyMoveMessage(): String = "Fifty-move rule — draw"

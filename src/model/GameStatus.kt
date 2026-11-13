@@ -3,5 +3,7 @@ package model
 enum class GameStatus {
     ACTIVE,
     CHECKMATE,
-    STALEMATE
+    STALEMATE,
+    INSUFFICIENT_MATERIAL,
+    FIFTY_MOVE_DRAW
 }

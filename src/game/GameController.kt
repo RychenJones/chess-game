@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import rules.CheckDetector
 import rules.EnPassant
+import rules.InsufficientMaterialDetector
 import rules.LegalMoveFinder
 import rules.MoveValidator
 import rules.ValidationResult
@@ -18,8 +19,13 @@ class GameController(
     val state: GameState = GameState(),
     private val validator: MoveValidator = MoveValidator(),
     private val checkDetector: CheckDetector = CheckDetector(),
-    private val legalMoveFinder: LegalMoveFinder = LegalMoveFinder(checkDetector = checkDetector)
+    private val legalMoveFinder: LegalMoveFinder = LegalMoveFinder(checkDetector = checkDetector),
+    private val insufficientMaterialDetector: InsufficientMaterialDetector = InsufficientMaterialDetector()
 ) {
+    private companion object {
+        const val FIFTY_MOVE_DRAW_THRESHOLD = 100
+    }
+
     var canUndo: Boolean by mutableStateOf(false)
         private set
 
@@ -103,19 +109,17 @@ class GameController(
                 state.setPlayerInCheck(
                     state.currentPlayer.takeIf { checkDetector.isInCheck(state.board, it) }
                 )
-                if (
-                    legalMoveFinder.legalMoves(state).isEmpty()
-                ) {
-                    val terminalStatus = if (state.playerInCheck != null) {
-                        GameStatus.CHECKMATE
-                    } else {
-                        GameStatus.STALEMATE
-                    }
-                    val winner = movingColor.takeIf { terminalStatus == GameStatus.CHECKMATE }
-                    state.setGameResult(terminalStatus, winner)
-                } else {
-                    state.setGameResult(GameStatus.ACTIVE, null)
+                val legalMoves = legalMoveFinder.legalMoves(state)
+                val terminalStatus = when {
+                    legalMoves.isEmpty() && state.playerInCheck != null -> GameStatus.CHECKMATE
+                    legalMoves.isEmpty() -> GameStatus.STALEMATE
+                    insufficientMaterialDetector.isInsufficientMaterial(state.board) ->
+                        GameStatus.INSUFFICIENT_MATERIAL
+                    state.halfMoveClock >= FIFTY_MOVE_DRAW_THRESHOLD -> GameStatus.FIFTY_MOVE_DRAW
+                    else -> GameStatus.ACTIVE
                 }
+                val winner = movingColor.takeIf { terminalStatus == GameStatus.CHECKMATE }
+                state.setGameResult(terminalStatus, winner)
                 canUndo = true
                 MoveResult.Success(captured)
             }
@@ -142,11 +146,17 @@ class GameController(
     }
 
     private fun gameOverFailure(): MoveResult.Failure {
-        if (state.gameStatus == GameStatus.STALEMATE) {
-            return MoveResult.Failure("Game over — Stalemate draw")
+        return when (state.gameStatus) {
+            GameStatus.STALEMATE -> MoveResult.Failure("Game over — Stalemate draw")
+            GameStatus.INSUFFICIENT_MATERIAL ->
+                MoveResult.Failure("Game over — Insufficient material draw")
+            GameStatus.FIFTY_MOVE_DRAW -> MoveResult.Failure("Game over — Fifty-move rule draw")
+            else -> {
+                val winnerName = state.winner?.name?.lowercase()?.replaceFirstChar { it.uppercase() }
+                    ?: "The opposing player"
+                MoveResult.Failure("Game over — $winnerName wins")
+            }
         }
-        val winnerName = state.winner?.name?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "The opposing player"
-        return MoveResult.Failure("Game over — $winnerName wins")
     }
 }
 

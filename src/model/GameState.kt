@@ -25,6 +25,9 @@ class GameState {
     var lastMove: LastMove? by mutableStateOf(null)
         private set
 
+    var halfMoveClock: Int by mutableStateOf(0)
+        private set
+
     init {
         reset()
     }
@@ -38,6 +41,7 @@ class GameState {
         gameStatus = GameStatus.ACTIVE
         winner = null
         lastMove = null
+        halfMoveClock = 0
     }
 
     internal fun setPlayerInCheck(color: Color?) {
@@ -56,7 +60,8 @@ class GameState {
         playerInCheck = playerInCheck,
         gameStatus = gameStatus,
         winner = winner,
-        lastMove = lastMove
+        lastMove = lastMove,
+        halfMoveClock = halfMoveClock
     )
 
     internal fun restore(snapshot: GameStateSnapshot) {
@@ -67,6 +72,7 @@ class GameState {
         gameStatus = snapshot.gameStatus
         winner = snapshot.winner
         lastMove = snapshot.lastMove
+        halfMoveClock = snapshot.halfMoveClock
     }
 
     internal fun clearSelection() {
@@ -102,6 +108,11 @@ class GameState {
         }
 
         val capturedPiece = board.move(move.from, move.to, capturedPosition)
+        halfMoveClock = if (movingPiece.type == PieceType.PAWN || capturedPiece != null) {
+            0
+        } else {
+            halfMoveClock + 1
+        }
         lastMove = LastMove(
             from = move.from,
             to = move.to,
@@ -111,6 +122,12 @@ class GameState {
         currentPlayer = currentPlayer.opposite()
         selectedPosition = null
         return capturedPiece
+    }
+
+    /** Allows focused tests to arrange a position near the fifty-move threshold. */
+    internal fun setHalfMoveClockForTesting(value: Int) {
+        require(value >= 0) { "The half-move clock cannot be negative" }
+        halfMoveClock = value
     }
 
     private fun setupPieces() {
@@ -141,5 +158,6 @@ internal data class GameStateSnapshot(
     val playerInCheck: Color?,
     val gameStatus: GameStatus,
     val winner: Color?,
-    val lastMove: LastMove?
+    val lastMove: LastMove?,
+    val halfMoveClock: Int
 )

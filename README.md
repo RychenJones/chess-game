@@ -58,10 +58,12 @@ The following items I plan to fix, improve, and/or add to this project in the fu
 
 * [x] Detect checkmate.
 * [x] Detect stalemate.
-* [ ] Detect draw conditions, including insufficient material, the fifty-move rule, and threefold repetition.
+* [x] Detect insufficient-material draws.
+* [x] Detect the fifty-move rule.
+* [ ] Detect threefold repetition.
 * [ ] Add pawn promotion with a choice of promoted piece.
 * [ ] Add castling, including the restrictions on the king and rook movement.
-* [ ] Add en passant captures.
+* [x] Add en passant captures.
 * [ ] Add move history and standard algebraic move notation.
 * [ ] Add multi-move history.
 

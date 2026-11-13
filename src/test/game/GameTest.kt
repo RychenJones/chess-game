@@ -84,6 +84,7 @@ class GameTest {
     @Test
     fun `controller leaves state unchanged when a move is invalid`() {
         val controller = GameController()
+        controller.state.setHalfMoveClockForTesting(99)
         controller.select(Position(6, 4))
 
         val result = controller.tryMove(Position(3, 4))
@@ -92,6 +93,105 @@ class GameTest {
         assertEquals(PieceType.PAWN, controller.state.board.pieceAt(Position(6, 4))?.type)
         assertEquals(null, controller.state.board.pieceAt(Position(3, 4)))
         assertEquals(Color.WHITE, controller.state.currentPlayer)
+        assertEquals(99, controller.state.halfMoveClock)
+        assertEquals(GameStatus.ACTIVE, controller.state.gameStatus)
+    }
+
+    @Test
+    fun `controller keeps the game active at ninety-nine half-moves`() {
+        val controller = rookPositionController()
+        val state = controller.state
+        state.setHalfMoveClockForTesting(98)
+
+        controller.select(Position(7, 0))
+        assertIs<MoveResult.Success>(controller.tryMove(Position(6, 0)))
+
+        assertEquals(99, state.halfMoveClock)
+        assertEquals(GameStatus.ACTIVE, state.gameStatus)
+    }
+
+    @Test
+    fun `controller declares a fifty-move draw at one hundred half-moves`() {
+        val controller = rookPositionController()
+        val state = controller.state
+        state.setHalfMoveClockForTesting(99)
+
+        controller.select(Position(7, 0))
+        assertIs<MoveResult.Success>(controller.tryMove(Position(6, 0)))
+
+        assertEquals(100, state.halfMoveClock)
+        assertEquals(GameStatus.FIFTY_MOVE_DRAW, state.gameStatus)
+        assertEquals(
+            MoveResult.Failure("Game over — Fifty-move rule draw"),
+            controller.tryMove(Position(0, 6))
+        )
+        assertEquals(false, controller.select(Position(0, 4)))
+    }
+
+    @Test
+    fun `pawn moves reset the half-move clock`() {
+        val controller = GameController()
+        val state = controller.state
+        state.setHalfMoveClockForTesting(99)
+
+        controller.select(Position(6, 4))
+        assertIs<MoveResult.Success>(controller.tryMove(Position(5, 4)))
+
+        assertEquals(0, state.halfMoveClock)
+        assertEquals(GameStatus.ACTIVE, state.gameStatus)
+    }
+
+    @Test
+    fun `ordinary captures reset the half-move clock`() {
+        val controller = rookCaptureController()
+        val state = controller.state
+        state.setHalfMoveClockForTesting(99)
+
+        controller.select(Position(7, 0))
+        val result = assertIs<MoveResult.Success>(controller.tryMove(Position(5, 0)))
+
+        assertEquals(PieceType.ROOK, result.captured?.type)
+        assertEquals(0, state.halfMoveClock)
+        assertEquals(GameStatus.ACTIVE, state.gameStatus)
+    }
+
+    @Test
+    fun `en passant captures reset the half-move clock`() {
+        val controller = enPassantController()
+        val state = controller.state
+
+        state.select(Position(7, 0))
+        state.applyMove(Move(Position(7, 0), Position(7, 1)))
+        state.select(Position(1, 5))
+        state.applyMove(Move(Position(1, 5), Position(3, 5)))
+        state.setHalfMoveClockForTesting(99)
+
+        controller.select(Position(3, 4))
+        val result = assertIs<MoveResult.Success>(controller.tryMove(Position(2, 5)))
+
+        assertEquals(PieceType.PAWN, result.captured?.type)
+        assertEquals(0, state.halfMoveClock)
+        assertEquals(GameStatus.ACTIVE, state.gameStatus)
+    }
+
+    @Test
+    fun `undo restores the half-move clock and reset clears it`() {
+        val controller = rookPositionController()
+        val state = controller.state
+        state.setHalfMoveClockForTesting(99)
+
+        controller.select(Position(7, 0))
+        assertIs<MoveResult.Success>(controller.tryMove(Position(6, 0)))
+        assertEquals(GameStatus.FIFTY_MOVE_DRAW, state.gameStatus)
+
+        assertTrue(controller.undo())
+        assertEquals(99, state.halfMoveClock)
+        assertEquals(GameStatus.ACTIVE, state.gameStatus)
+        assertEquals(Color.WHITE, state.currentPlayer)
+
+        controller.reset()
+        assertEquals(0, state.halfMoveClock)
+        assertEquals(GameStatus.ACTIVE, state.gameStatus)
     }
 
     @Test
@@ -345,6 +445,57 @@ class GameTest {
     }
 
     @Test
+    fun `controller detects insufficient material after a capture`() {
+        val controller = GameController()
+        val state = controller.state
+        state.board.pieces().forEach { state.board.remove(it.position) }
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(7, 4)))
+        state.board.add(Piece(Color.WHITE, PieceType.BISHOP, Position(6, 2)))
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 7)))
+        state.board.add(Piece(Color.BLACK, PieceType.KNIGHT, Position(5, 3)))
+
+        assertTrue(controller.select(Position(6, 2)))
+        val result = controller.tryMove(Position(5, 3))
+
+        val success = assertIs<MoveResult.Success>(result)
+        assertEquals(PieceType.KNIGHT, success.captured?.type)
+        assertEquals(GameStatus.INSUFFICIENT_MATERIAL, state.gameStatus)
+        assertEquals(null, state.winner)
+        assertEquals(
+            MoveResult.Failure("Game over — Insufficient material draw"),
+            controller.tryMove(Position(0, 6))
+        )
+        assertEquals(false, controller.select(Position(0, 7)))
+    }
+
+    @Test
+    fun `undo restores active material and reset restores the initial game`() {
+        val controller = GameController()
+        val state = controller.state
+        state.board.pieces().forEach { state.board.remove(it.position) }
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(7, 4)))
+        state.board.add(Piece(Color.WHITE, PieceType.BISHOP, Position(6, 2)))
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 7)))
+        state.board.add(Piece(Color.BLACK, PieceType.KNIGHT, Position(5, 3)))
+
+        controller.select(Position(6, 2))
+        assertIs<MoveResult.Success>(controller.tryMove(Position(5, 3)))
+        assertEquals(GameStatus.INSUFFICIENT_MATERIAL, state.gameStatus)
+
+        assertTrue(controller.undo())
+        assertEquals(GameStatus.ACTIVE, state.gameStatus)
+        assertEquals(null, state.winner)
+        assertEquals(Color.WHITE, state.currentPlayer)
+        assertEquals(PieceType.BISHOP, state.board.pieceAt(Position(6, 2))?.type)
+        assertEquals(PieceType.KNIGHT, state.board.pieceAt(Position(5, 3))?.type)
+
+        controller.reset()
+        assertEquals(GameStatus.ACTIVE, state.gameStatus)
+        assertEquals(32, state.board.pieces().size)
+        assertEquals(PieceType.PAWN, state.board.pieceAt(Position(6, 4))?.type)
+    }
+
+    @Test
     fun `reset clears stalemate and restores normal play`() {
         val controller = GameController()
         val state = controller.state
@@ -422,5 +573,39 @@ class GameTest {
         assertEquals(whitePawn.type, state.board.pieceAt(Position(3, 0))?.type)
         assertEquals(blackPawn.type, state.board.pieceAt(Position(2, 1))?.type)
         assertEquals(Color.WHITE, state.currentPlayer)
+    }
+
+    private fun rookPositionController(): GameController {
+        val controller = GameController()
+        val state = controller.state
+        state.board.clear()
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(7, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 4)))
+        state.board.add(Piece(Color.WHITE, PieceType.ROOK, Position(7, 0)))
+        state.board.add(Piece(Color.BLACK, PieceType.ROOK, Position(0, 7)))
+        return controller
+    }
+
+    private fun rookCaptureController(): GameController {
+        val controller = GameController()
+        val state = controller.state
+        state.board.clear()
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(7, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 4)))
+        state.board.add(Piece(Color.WHITE, PieceType.ROOK, Position(7, 0)))
+        state.board.add(Piece(Color.BLACK, PieceType.ROOK, Position(5, 0)))
+        return controller
+    }
+
+    private fun enPassantController(): GameController {
+        val controller = GameController()
+        val state = controller.state
+        state.board.clear()
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(7, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 4)))
+        state.board.add(Piece(Color.WHITE, PieceType.ROOK, Position(7, 0)))
+        state.board.add(Piece(Color.WHITE, PieceType.PAWN, Position(3, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.PAWN, Position(1, 5)))
+        return controller
     }
 }
