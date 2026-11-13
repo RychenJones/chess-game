@@ -46,9 +46,9 @@ Out of scope unless the user explicitly expands the project:
 5. QA evaluates the specialist's submission against the applicable AC and returns an explicit `PASS` or `FAIL` verdict directly to that specialist.
 6. On `FAIL`, the specialist fixes the QA findings and directly resubmits the updated implementation and completion package to QA. The specialist owns this repair-and-retest loop and repeats it until QA returns `PASS`.
 7. Only after QA returns `PASS` does the specialist report the passing result and completion package to the Orchestrator. The Orchestrator records the verdict, integrates dependent work, and requests any required integration or regression checks.
-8. When all assigned work has passed verification, the Orchestrator sends the final implementation report to the user. The report contains one concise paragraph for every participating agent, overall verification status, unresolved risks, and follow-up work.
+8. When all assigned work has passed verification, the Orchestrator prepares the final implementation report. The report contains one concise paragraph for every participating agent, overall verification status, unresolved risks, and follow-up work. If the Orchestrator is running as a subagent or asynchronous handoff, it sends that completed report back to the parent/initiating agent, and the parent/initiating agent must faithfully relay it to the user as the final response.
 
-The Orchestrator's final report is a completion output, not requirements discovery. It must not ask the user to define or clarify scope; all user requirements enter through the Architect. The Orchestrator coordinates assignments and records passed reports; it does not act as the QA relay for specialist submissions.
+The Orchestrator's final report is a completion output, not requirements discovery. It must not ask the user to define or clarify scope; all user requirements enter through the Architect. The Orchestrator coordinates assignments and records passed reports; it does not act as the QA relay for specialist submissions. Receiving the report is an explicit return-path event: the parent/initiating agent must surface the report rather than replying only that the work was handed off.
 
 ## Handoff contract
 
