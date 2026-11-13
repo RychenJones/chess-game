@@ -57,7 +57,7 @@ The following items I plan to fix, improve, and/or add to this project in the fu
 ### Standard chess functionality
 
 * [x] Detect checkmate.
-* [ ] Detect stalemate.
+* [x] Detect stalemate.
 * [ ] Detect draw conditions, including insufficient material, the fifty-move rule, and threefold repetition.
 * [ ] Add pawn promotion with a choice of promoted piece.
 * [ ] Add castling, including the restrictions on the king and rook movement.

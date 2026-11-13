@@ -25,14 +25,37 @@ class GameController(
     private var undoSnapshot: model.GameStateSnapshot? = null
 
     fun select(position: Position): Boolean =
-        state.select(position)
+        state.gameStatus == GameStatus.ACTIVE && state.select(position)
 
     fun deselect() {
         state.clearSelection()
     }
 
+    /**
+     * Returns the legal destinations for the currently selected piece.
+     * Movement rules remain owned by [LegalMoveFinder]; the UI only consumes
+     * these positions to render selection feedback.
+     */
+    fun legalDestinationsForSelected(): Set<Position> {
+        val selectedPosition = state.selectedPosition ?: return emptySet()
+        val selectedPiece = state.board.pieceAt(selectedPosition) ?: return emptySet()
+        if (
+            state.gameStatus != GameStatus.ACTIVE ||
+            selectedPiece.color != state.currentPlayer
+        ) {
+            return emptySet()
+        }
+
+        return legalMoveFinder
+            .legalMoves(state.board, state.currentPlayer)
+            .asSequence()
+            .filter { it.from == selectedPosition }
+            .map { it.to }
+            .toSet()
+    }
+
     fun tryMove(to: Position): MoveResult {
-        if (state.gameStatus == GameStatus.CHECKMATE) {
+        if (state.gameStatus != GameStatus.ACTIVE) {
             return gameOverFailure()
         }
 
@@ -43,7 +66,7 @@ class GameController(
     }
 
     fun tryMove(move: Move): MoveResult {
-        if (state.gameStatus == GameStatus.CHECKMATE) {
+        if (state.gameStatus != GameStatus.ACTIVE) {
             return gameOverFailure()
         }
 
@@ -68,10 +91,15 @@ class GameController(
                     state.currentPlayer.takeIf { checkDetector.isInCheck(state.board, it) }
                 )
                 if (
-                    state.playerInCheck != null &&
                     legalMoveFinder.legalMoves(state.board, state.currentPlayer).isEmpty()
                 ) {
-                    state.setGameResult(GameStatus.CHECKMATE, movingColor)
+                    val terminalStatus = if (state.playerInCheck != null) {
+                        GameStatus.CHECKMATE
+                    } else {
+                        GameStatus.STALEMATE
+                    }
+                    val winner = movingColor.takeIf { terminalStatus == GameStatus.CHECKMATE }
+                    state.setGameResult(terminalStatus, winner)
                 } else {
                     state.setGameResult(GameStatus.ACTIVE, null)
                 }
@@ -101,6 +129,9 @@ class GameController(
     }
 
     private fun gameOverFailure(): MoveResult.Failure {
+        if (state.gameStatus == GameStatus.STALEMATE) {
+            return MoveResult.Failure("Game over — Stalemate draw")
+        }
         val winnerName = state.winner?.name?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "The opposing player"
         return MoveResult.Failure("Game over — $winnerName wins")
     }

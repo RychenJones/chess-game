@@ -3,6 +3,7 @@ package game
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 import model.Color
 import model.GameStatus
 import model.Move
@@ -11,6 +12,62 @@ import model.PieceType
 import model.Position
 
 class GameTest {
+    @Test
+    fun `controller exposes legal destinations for the selected piece`() {
+        val controller = GameController()
+
+        controller.select(Position(6, 4))
+
+        assertEquals(
+            setOf(Position(5, 4), Position(4, 4)),
+            controller.legalDestinationsForSelected()
+        )
+    }
+
+    @Test
+    fun `legal destinations exclude friendly pieces and blocked paths but include captures`() {
+        val controller = GameController()
+        val state = controller.state
+        state.board.pieces().forEach { state.board.remove(it.position) }
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(7, 4)))
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 4)))
+        state.board.add(Piece(Color.WHITE, PieceType.ROOK, Position(4, 4)))
+        state.board.add(Piece(Color.WHITE, PieceType.PAWN, Position(4, 6)))
+        state.board.add(Piece(Color.BLACK, PieceType.PAWN, Position(4, 2)))
+
+        controller.select(Position(4, 4))
+
+        val destinations = controller.legalDestinationsForSelected()
+        assertTrue(Position(4, 2) in destinations)
+        assertTrue(Position(4, 3) in destinations)
+        assertTrue(Position(4, 5) in destinations)
+        assertTrue(Position(3, 4) in destinations)
+        assertTrue(Position(4, 6) !in destinations)
+        assertTrue(Position(4, 1) !in destinations)
+    }
+
+    @Test
+    fun `legal destinations clear after deselection move reset and undo`() {
+        val controller = GameController()
+
+        controller.select(Position(6, 4))
+        assertTrue(controller.legalDestinationsForSelected().isNotEmpty())
+
+        controller.deselect()
+        assertTrue(controller.legalDestinationsForSelected().isEmpty())
+
+        controller.select(Position(6, 4))
+        assertIs<MoveResult.Success>(controller.tryMove(Position(5, 4)))
+        assertTrue(controller.legalDestinationsForSelected().isEmpty())
+
+        assertTrue(controller.undo())
+        assertTrue(controller.legalDestinationsForSelected().isEmpty())
+
+        controller.select(Position(6, 4))
+        controller.reset()
+        assertTrue(controller.legalDestinationsForSelected().isEmpty())
+    }
+
     @Test
     fun `controller applies only valid selected moves`() {
         val controller = GameController()
@@ -149,6 +206,74 @@ class GameTest {
         assertEquals(MoveResult.Failure("Game over — White wins"), attemptedMove)
         assertEquals(PieceType.KING, state.board.pieceAt(Position(0, 0))?.type)
         assertEquals(Color.BLACK, state.currentPlayer)
+    }
+
+    @Test
+    fun `controller detects stalemate when the current player has no legal moves and is not in check`() {
+        val controller = GameController()
+        val state = controller.state
+        state.board.pieces().forEach { state.board.remove(it.position) }
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 0)))
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(2, 2)))
+        state.board.add(Piece(Color.WHITE, PieceType.QUEEN, Position(3, 1)))
+
+        controller.select(Position(3, 1))
+        val result = controller.tryMove(Position(2, 1))
+
+        assertIs<MoveResult.Success>(result)
+        assertEquals(GameStatus.STALEMATE, state.gameStatus)
+        assertEquals(null, state.winner)
+        assertEquals(null, state.playerInCheck)
+        assertTrue(controller.legalDestinationsForSelected().isEmpty())
+        assertEquals(false, controller.select(Position(0, 0)))
+        assertEquals(
+            MoveResult.Failure("Game over — Stalemate draw"),
+            controller.tryMove(Position(0, 1))
+        )
+    }
+
+    @Test
+    fun `reset clears stalemate and restores normal play`() {
+        val controller = GameController()
+        val state = controller.state
+        state.board.pieces().forEach { state.board.remove(it.position) }
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 0)))
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(2, 2)))
+        state.board.add(Piece(Color.WHITE, PieceType.QUEEN, Position(3, 1)))
+
+        controller.select(Position(3, 1))
+        assertIs<MoveResult.Success>(controller.tryMove(Position(2, 1)))
+        assertEquals(GameStatus.STALEMATE, state.gameStatus)
+
+        controller.reset()
+
+        assertEquals(GameStatus.ACTIVE, state.gameStatus)
+        assertEquals(null, state.winner)
+        assertEquals(Color.WHITE, state.currentPlayer)
+        assertEquals(PieceType.PAWN, state.board.pieceAt(Position(6, 4))?.type)
+        assertTrue(controller.select(Position(6, 4)))
+        assertTrue(controller.legalDestinationsForSelected().isNotEmpty())
+    }
+
+    @Test
+    fun `undo restores active play after a terminal result`() {
+        val controller = GameController()
+        val state = controller.state
+        state.board.pieces().forEach { state.board.remove(it.position) }
+        state.board.add(Piece(Color.BLACK, PieceType.KING, Position(0, 0)))
+        state.board.add(Piece(Color.WHITE, PieceType.KING, Position(2, 2)))
+        state.board.add(Piece(Color.WHITE, PieceType.QUEEN, Position(3, 1)))
+
+        controller.select(Position(3, 1))
+        assertIs<MoveResult.Success>(controller.tryMove(Position(2, 1)))
+        assertEquals(GameStatus.STALEMATE, state.gameStatus)
+
+        assertTrue(controller.undo())
+
+        assertEquals(GameStatus.ACTIVE, state.gameStatus)
+        assertEquals(Color.WHITE, state.currentPlayer)
+        assertEquals(PieceType.QUEEN, state.board.pieceAt(Position(3, 1))?.type)
+        assertEquals(null, state.board.pieceAt(Position(2, 1)))
     }
 
     @Test

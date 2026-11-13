@@ -2,6 +2,7 @@ package ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -66,16 +67,18 @@ fun ChessBoardView(
                     " — captured ${pieceDescription(it)}"
                 }.orEmpty()
                 val currentPlayerName = state.currentPlayer.name.lowercase().replaceFirstChar { it.uppercase() }
-                feedbackMessage.value = if (state.gameStatus == GameStatus.CHECKMATE) {
-                    checkmateMessage(state.winner)
-                } else {
-                    val checkMessage = if (state.playerInCheck == state.currentPlayer) {
-                        " ${currentPlayerName} is in check."
-                    } else {
-                        ""
+                feedbackMessage.value = when (state.gameStatus) {
+                    GameStatus.CHECKMATE -> checkmateMessage(state.winner)
+                    GameStatus.STALEMATE -> stalemateMessage()
+                    GameStatus.ACTIVE -> {
+                        val checkMessage = if (state.playerInCheck == state.currentPlayer) {
+                            " ${currentPlayerName} is in check."
+                        } else {
+                            ""
+                        }
+                        "Move complete$captureMessage. " +
+                            "$currentPlayerName's turn.$checkMessage"
                     }
-                    "Move complete$captureMessage. " +
-                        "$currentPlayerName's turn.$checkMessage"
                 }
             }
 
@@ -131,12 +134,14 @@ fun ChessBoardView(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = if (state.gameStatus == GameStatus.CHECKMATE) {
-                        checkmateMessage(state.winner)
-                    } else {
-                        "Current player: " +
-                            state.currentPlayer.name.lowercase().replaceFirstChar { it.uppercase() } +
-                            if (state.playerInCheck == state.currentPlayer) " — in check" else ""
+                    text = when (state.gameStatus) {
+                        GameStatus.CHECKMATE -> checkmateMessage(state.winner)
+                        GameStatus.STALEMATE -> stalemateMessage()
+                        GameStatus.ACTIVE -> {
+                            "Current player: " +
+                                state.currentPlayer.name.lowercase().replaceFirstChar { it.uppercase() } +
+                                if (state.playerInCheck == state.currentPlayer) " — in check" else ""
+                        }
                     },
                     style = MaterialTheme.typography.labelLarge,
                     textAlign = TextAlign.Center
@@ -152,6 +157,8 @@ fun ChessBoardView(
         }
 
         Box(modifier = Modifier.width(560.dp)) {
+            val legalDestinations = controller.legalDestinationsForSelected()
+
             Row {
                 Column {
                     repeat(8) { row ->
@@ -171,6 +178,7 @@ fun ChessBoardView(
                                 val position = Position(row, column)
                                 val piece = state.board.pieceAt(position)
                                 val isSelected = selectedPosition.value == position
+                                val isLegalDestination = position in legalDestinations
                                 val isCheckedKing = piece?.type == PieceType.KING &&
                                     state.playerInCheck == piece.color
                                 val squareColor = if (isCheckedKing) {
@@ -187,19 +195,36 @@ fun ChessBoardView(
                                     modifier = Modifier
                                         .size(64.dp)
                                         .background(squareColor)
-                                        .clickable(enabled = state.gameStatus != GameStatus.CHECKMATE) {
+                                        .clickable(
+                                            enabled = state.gameStatus == GameStatus.ACTIVE,
+                                            interactionSource = null
+                                        ) {
                                             handleSquareClick(position)
                                         }
                                         .semantics {
                                             contentDescription = piece?.let {
                                                 val checkDescription = if (isCheckedKing) ", in check" else ""
-                                                "${pieceDescription(it)} on ${position.toAlgebraic()}$checkDescription"
-                                            } ?: "Empty square ${position.toAlgebraic()}"
+                                                val legalMoveDescription =
+                                                    if (isLegalDestination) ", legal move destination" else ""
+                                                "${pieceDescription(it)} on ${position.toAlgebraic()}" +
+                                                    "$checkDescription$legalMoveDescription"
+                                            } ?: "Empty square ${position.toAlgebraic()}" +
+                                                if (isLegalDestination) ", legal move destination" else ""
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {
                                     piece?.let { currentPiece ->
                                         ChessPieceView(currentPiece)
+                                    }
+                                    if (isLegalDestination) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(18.dp)
+                                                .background(
+                                                    color = UiColor(0x995D4037),
+                                                    shape = CircleShape
+                                                )
+                                        )
                                     }
                                 }
                             }
@@ -245,3 +270,5 @@ internal fun checkmateMessage(winner: model.Color?): String {
     val winnerName = winner?.name?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "Unknown"
     return "Checkmate — $winnerName wins"
 }
+
+internal fun stalemateMessage(): String = "Stalemate — draw"

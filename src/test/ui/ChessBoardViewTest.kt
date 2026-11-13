@@ -28,11 +28,25 @@ class ChessBoardViewTest {
     }
 
     @Test
+    fun `formats stalemate as a draw`() {
+        assertEquals("Stalemate — draw", stalemateMessage())
+    }
+
+    @Test
     fun `game state exposes checkmate status for UI rendering`() {
         val state = GameState()
         state.setGameResult(GameStatus.CHECKMATE, Color.WHITE)
 
         assertEquals(GameStatus.CHECKMATE, state.gameStatus)
         assertEquals(Color.WHITE, state.winner)
+    }
+
+    @Test
+    fun `game state exposes stalemate without a winner`() {
+        val state = GameState()
+        state.setGameResult(GameStatus.STALEMATE, null)
+
+        assertEquals(GameStatus.STALEMATE, state.gameStatus)
+        assertEquals(null, state.winner)
     }
 }
